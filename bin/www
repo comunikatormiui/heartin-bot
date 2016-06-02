@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+
+// var Xray = require('x-ray');
+// var x = Xray();
+//
+//
+// //x('http://eurheartj.oxfordjournals.org/content/36/44/3075', ['h2'])(console.log)
+//
+// x('http://eurheartj.oxfordjournals.org/content/36/44/3075', ['inner-collapsable-content-wrapper'])(console.log)
+
+var jsdom = require("jsdom");
+
+jsdom.env(
+    "https://iojs.org/dist/",
+    ["http://code.jquery.com/jquery.js"],
+    function (err, window) {
+        console.log("there have been", window.$("a").length - 4, "io.js releases!");
+    }
+);
+
+
+// var _ = require('underscore'),
+//     PDFParser = require('pdf2json');
+//
+// var pdfParser = new PDFParser();
+//
+// var _onPDFBinDataReady = function (pdf) {
+//     console.log('Loaded pdf:\n');
+//     for (var i in pdf.formImage.Pages) {
+//         var page = pdf.formImage.Pages[i];
+//         for (var j in page.Texts) {
+//             var text = page.Texts[j];
+//             console.log(text.R[0].T);
+//         }
+//     }
+// };
+//
+// // Create an error handling function
+// var _onPDFBinDataError = function (error) {
+//     console.log(error);
+// };
+//
+// // Use underscore to bind the data ready function to the pdfParser
+// // so that when the data ready event is emitted your function will
+// // be called. As opposed to the example, I have used `this` instead
+// // of `self` since self had no meaning in this context
+// pdfParser.on('pdfParser_dataReady', _.bind(_onPDFBinDataReady, this));
+//
+// // Register error handling function
+// pdfParser.on('pdfParser_dataError', _.bind(_onPDFBinDataError, this));
+//
+// // Construct the file path of the pdf
+// var pdfFilePath = 'bin/example.pdf';
+//
+// // Load the pdf. When it is loaded your data ready function will be called.
+// pdfParser.loadPDF(pdfFilePath);
+
+//
+// /**
+//  * Module dependencies.
+//  */
+//
+// var app = require('../app');
+// var debug = require('debug')('heartin-bot:server');
+// var http = require('http');
+//
+// /**
+//  * Get port from environment and store in Express.
+//  */
+//
+// var port = normalizePort(process.env.PORT || '3000');
+// app.set('port', port);
+//
+// /**
+//  * Create HTTP server.
+//  */
+//
+// var server = http.createServer(app);
+//
+// /**
+//  * Listen on provided port, on all network interfaces.
+//  */
+//
+// server.listen(port);
+// server.on('error', onError);
+// server.on('listening', onListening);
+//
+// /**
+//  * Normalize a port into a number, string, or false.
+//  */
+//
+// function normalizePort(val) {
+//   var port = parseInt(val, 10);
+//
+//   if (isNaN(port)) {
+//     // named pipe
+//     return val;
+//   }
+//
+//   if (port >= 0) {
+//     // port number
+//     return port;
+//   }
+//
+//   return false;
+// }
+//
+// /**
+//  * Event listener for HTTP server "error" event.
+//  */
+//
+// function onError(error) {
+//   if (error.syscall !== 'listen') {
+//     throw error;
+//   }
+//
+//   var bind = typeof port === 'string'
+//     ? 'Pipe ' + port
+//     : 'Port ' + port;
+//
+//   // handle specific listen errors with friendly messages
+//   switch (error.code) {
+//     case 'EACCES':
+//       console.error(bind + ' requires elevated privileges');
+//       process.exit(1);
+//       break;
+//     case 'EADDRINUSE':
+//       console.error(bind + ' is already in use');
+//       process.exit(1);
+//       break;
+//     default:
+//       throw error;
+//   }
+// }
+//
+// /**
+//  * Event listener for HTTP server "listening" event.
+//  */
+//
+// function onListening() {
+//   var addr = server.address();
+//   var bind = typeof addr === 'string'
+//     ? 'pipe ' + addr
+//     : 'port ' + addr.port;
+//   debug('Listening on ' + bind);
+// }
