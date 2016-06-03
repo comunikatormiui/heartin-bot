@@ -95,7 +95,9 @@ request('http://eurheartj.oxfordjournals.org/content/early/2016/05/19/eurheartj.
                     var subarray = arrayLines.slice(startLine,stopLine);
                     var textSeparated = subarray.join("\n");
                     console.log('topic block->' + textSeparated);
+                    formattedDict[title] = textSeparated;
                 }
+                
                 isParsed = true;
 
             });
