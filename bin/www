@@ -18,7 +18,7 @@ if (os.platform() == 'win32') {
     var chilkat = require('chilkat_macosx');
 }
 
-var url = 'mongodb://localhost:27017/heartin-bot';
+var url = 'mongodb://mac5.ixcglobal.com:27017/heartin-bot';
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var h2t = new chilkat.HtmlToText();
