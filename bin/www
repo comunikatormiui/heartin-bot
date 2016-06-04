@@ -236,7 +236,12 @@ function startBot() {
     server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
 
     function respond(req, res, next) {
-        res.send('hello ' + req.params.name);
+        if (req.query['hub.verify_token'] === 'heartin-bot-verify-token') {
+            res.send(req.query['hub.challenge']);
+        } else {
+            res.send('Error, wrong validation token');
+        }
+
         console.log('Received ' +req.params.name);
         next();
     }
