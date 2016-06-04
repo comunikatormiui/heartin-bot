@@ -27,6 +27,8 @@ if (success != true) {
     console.log(h2t.LastErrorText);
     return;
 }
+var restify = require('restify');
+var builder = require('botbuilder');
 
 var dbMain;
 
@@ -234,18 +236,91 @@ function startBot() {
 // Setup Restify Server
     var server = restify.createServer();
     server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
+    server.use(restify.queryParser());
+    server.use(restify.acceptParser(server.acceptable));
+    // server.use(restify.queryParser());
+    // server.use(restify.urlEncodedBodyParser());
+    // server.use(restify.jsonp());
+    server.use(restify.bodyParser({ mapParams: false }));
 
     function respond(req, res, next) {
-        if (req.query['hub.verify_token'] === 'heartin-bot-verify-token') {
-            res.send(req.query['hub.challenge']);
-        } else {
-            res.send('Error, wrong validation token');
-        }
+        console.log('Received ' + req);
+        console.log('Received ' + req.query.hub.challenge);
+        res.contentType = "text/plain";
 
-        console.log('Received ' +req.params.name);
+        if (req.query.hub.verify_token === 'heartin-bot-verify-token1')
+            res.send(req.query.hub.challenge);
+        else
+            res.send('Not verified');
         next();
     }
     server.get('/webhook', respond);
+    // server.use(restify.queryParser());
+    function sendMessage(recipientId, message) {
+        request({
+            url: 'https://graph.facebook.com/v2.6/me/messages',
+            qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+            method: 'POST',
+            json: {
+                recipient: {id: recipientId},
+                message: message,
+            }
+        }, function(error, response, body) {
+            if (error) {
+                console.log('Error sending message: ', error);
+            } else if (response.body.error) {
+                console.log('Error: ', response.body.error);
+            }
+        });
+    };
+
+    server.post('/webhook', function (req, res) {
+        console.log('Received: ', req.body);
+
+        var events = req.body.entry[0].messaging;
+
+        for (i = 0; i < events.length; i++) {
+            var event = events[i];
+            if (event.message && event.message.text) {
+                var text = event.message.text;
+
+                if (text.indexOf('search') > -1) {
+                    text = text.replace('search','');
+                    var textWithoutSpaces = text.replace(' ','');
+                    if (textWithoutSpaces.length == 0) {
+                        sendMessage(event.sender.id, {text: "nothing to search please write words"});
+                    } else {
+                        text = text.slice(1);
+                        sendMessage(event.sender.id, {text: "I start searching for->" + text});
+
+                        dbMain.collection('guides').find({"title": new RegExp(text, 'i')}).toArray(function(err, items) {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            if(items.length == 0)
+                                sendMessage(event.sender.id, {text: "finded zero items"});
+
+                            else {
+                                items.forEach(function(guide) {
+                                    sendMessage(event.sender.id, {text: "From: " + guide.mainTitle});
+                                    sendMessage(event.sender.id, {text: "Title: " + guide.title});
+                                    var setOfText = guide.text.match(/.{1,310}/g);
+                                    setOfText.forEach(function(textToSend) {
+                                        sendMessage(event.sender.id, {text: textToSend});
+                                    });
+                                });
+                            }
+
+
+                        });
+
+                    }
+                } else sendMessage(event.sender.id, {text: "I didn't understand. Service provide access to guidelines for cardiologists. Say search <what you like to search> to me!"});
+            }
+        }
+        res.send("");
+    });
 
     server.listen(process.env.port || 3978, function () {
         console.log('%s listening to %s', server.name, server.url);
@@ -281,7 +356,7 @@ MongoClient.connect(url, function(err, db) {
 
     startBot();
 
-    if (true) {
+    if (false) {
         // PARSING
         var links = [
             'http://eurheartj.oxfordjournals.org/content/early/2016/05/23/eurheartj.ehw106', //CVD Prevention in clinical practice (European Guidelines on)
@@ -312,7 +387,7 @@ MongoClient.connect(url, function(err, db) {
 
 
 
-        request(links[5], function (error, response, html) {
+        request(links[9], function (error, response, html) {
             if (!error && response.statusCode == 200) {
                 var $ = cheerio.load(html);
                 $('.highwire-cite-title-wrap').filter(function() {
@@ -384,8 +459,8 @@ MongoClient.connect(url, function(err, db) {
 //     res.pipe(parser);
 // });
 
-var restify = require('restify');
-var builder = require('botbuilder');
+// var restify = require('restify');
+// var builder = require('botbuilder');
 // var model = 'https://api.projectoxford.ai/luis/v1/application?id=c413b2ef-382c-45bd-8ff0-f76d60e2a821&subscription-key=d77c589be95843659e93b31b5621741d&q=';
 // var dialog = new builder.LuisDialog(model);
 
@@ -407,7 +482,7 @@ var builder = require('botbuilder');
 //  * Get port from environment and store in Express.
 //  */
 //
-// var port = normalizePort(process.env.PORT || '3000');
+// var port = normalizePort(process.env.PORT || '9000');
 // app.set('port', port);
 //
 // /**
