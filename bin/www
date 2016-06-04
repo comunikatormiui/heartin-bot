@@ -18,96 +18,333 @@ if (os.platform() == 'win32') {
     var chilkat = require('chilkat_macosx');
 }
 
+var url = 'mongodb://localhost:27017/heartin-bot';
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+var h2t = new chilkat.HtmlToText();
+var success = h2t.UnlockComponent("30-day trial");
+if (success != true) {
+    console.log(h2t.LastErrorText);
+    return;
+}
 
-// var htmlToText = require('html-to-text');
+var dbMain;
 
-request('http://eurheartj.oxfordjournals.org/content/early/2016/05/19/eurheartj.ehw128', function (error, response, html) {
-    if (!error && response.statusCode == 200) {
-        // parser.parseComplete(html);
-        // var text = htmlToText.fromString(html, {
-        //     wordwrap: 130
-        // });
-        // console.log(text);
-
-//         var json = html2json(html);
-//         console.log(json);
-         var $ = cheerio.load(html);
+// var _ = require('underscore'),
+//     PDFParser = require('pdf2json');
 //
-//         console.log('Start parsing');
-        var isParsed = false;
+// var pdfParser = new PDFParser();
+//
+// var _onPDFBinDataReady = function (pdf) {
+//     console.log('Loaded pdf:\n');
+//     var isTableOfContextProcessing = false;
+//     var table = {};
+//     var buffer = [];
+//
+//     for (var i in pdf.formImage.Pages) {
+//         var page = pdf.formImage.Pages[i];
+//
+//         for (var j in page.Texts) {
+//             var text = page.Texts[j];
+//             var textString = text.R[0].T;
+//             console.log(textString);
+//             buffer.push(textString);
+//             if (textString.indexOf('Contents') > -1) {
+//                 var previousString = buffer[buffer.length - 2];
+//                 var previousPreviousString = buffer[buffer.length - 3];
+//                 if (previousString === 'of' && previousPreviousString === 'Table')
+//                 {
+//                     // here is start table of contents
+//                     console.log('Start');
+//                     isTableOfContextProcessing = true;
+//                 }
+//             }
+//             if (textString.indexOf('References') > -1) {
+//
+//                 var previousString = buffer[buffer.length - 2];
+//                 if (previousString === '7.'){
+//                     console.log('Stop');
+//                     isTableOfContextProcessing = false;
+//                 }
+//
+//             }
+//             if (isTableOfContextProcessing) {
+//                 if (table[i][text.y] !== undefined) {
+//                     var savedText = table[i][text.y];
+//                     savedText = savedText + ' ' + textString;
+//                     table[i][text.y] = savedText
+//                 } else table[i][text.y]=textString
+//
+//             }
+//         }
+//         console.log('Stop');
+//
+//     }
+// };
+//
+// // Create an error handling function
+// var _onPDFBinDataError = function (error) {
+//     console.log(error);
+// };
+//
+// // Use underscore to bind the data ready function to the pdfParser
+// // so that when the data ready event is emitted your function will
+// // be called. As opposed to the example, I have used `this` instead
+// // of `self` since self had no meaning in this context
+// pdfParser.on('pdfParser_dataReady', _.bind(_onPDFBinDataReady, this));
+//
+// // Register error handling function
+// pdfParser.on('pdfParser_dataError', _.bind(_onPDFBinDataError, this));
+//
+// // Construct the file path of the pdf
+// var pdfFilePath = 'bin/example.pdf';
+//
+// // Load the pdf. When it is loaded your data ready function will be called.
+// pdfParser.loadPDF(pdfFilePath);
+//
+//
+//
+// return;
 
-        $('#sticky_navigation ul').filter(function() {
-            if (isParsed) return;
-            var data = $(this);
-            var listOfArticleTopics = data[0].children[0].children[1].children[0].children;
-            var topics = [];
 
-            for (var i = 0; i < listOfArticleTopics.length; i++) {
-                var topic = listOfArticleTopics[i];
-                //console.log('Topic->' + topic.children[0].children[0].data + '\n');
-                topics.push(topic.children[0].children[0].data);
+// var pdfUtil = require('pdf-to-text');
+// var pdf_path = "bin/example.pdf";
+//
+// pdfUtil.info(pdf_path, function(err, info) {
+//     if (err) throw(err);
+//     console.log(info);
+// });
+//
+//
+// pdfUtil.pdfToText(pdf_path, function(err, data) {
+//     if (err) throw(err);
+//     console.log(data); //print all text
+// });
+
+// var PdfReader = require("../node_modules/pdfreader/index.js").PdfReader;
+//
+// new PdfReader().parseFileItems('bin/example.pdf', function(err, item){
+//     if (err)
+//         console.log(err);
+//     else if (!item)
+//         console.log();
+//     else if (item.file)
+//         console.log("file =", item.file.path);
+//     else if (item.page)
+//         console.log("page =", item.page);
+//     else if (item.x)
+//         console.log([item.x, item.y, item.oc, item.A, Math.floor(item.w), item.text].join("\t"));
+//     else
+//         console.warn(item);
+// });
+
+
+// const actions = {
+//     say(sessionId, context, message, cb) {
+//         console.log(message);
+//         cb();
+//     },
+//     merge(sessionId, context, entities, message, cb) {
+//         cb(context);
+//     },
+//     error(sessionId, context, error) {
+//         console.log(error.message);
+//     },
+// };
+// const Wit = require('node-wit').Wit;
+// const client = new Wit('ZGKQ2GAD4WXFIYLJLRHTUDWQU7UEQ5PM', actions);
+// const context = {};
+// const session = 'my-user-session-42';
+// const context0 = {};
+// client.runActions(session, 'what is the weather in London?', context0, (e, context1) => {
+//     if (e) {
+//         console.log('Oops! Got an error: ' + e);
+//         return;
+//     }
+//     console.log('The session state is now: ' + JSON.stringify(context1));
+//     client.runActions(session, 'and in Brussels?', context1, (e, context2) => {
+//         if (e) {
+//             console.log('Oops! Got an error: ' + e);
+//             return;
+//         }
+//         console.log('The session state is now: ' + JSON.stringify(context2));
+//     });
+// });
+
+// var apiai = require('apiai');
+//
+// var app = apiai("54664764b78e4bc289e6ff2a3cec7a75");
+//
+// var request = app.textRequest('Please tell me more about CVD');
+//
+// request.on('response', function(response) {
+//     console.log(response);
+// });
+//
+// request.on('error', function(error) {
+//     console.log(error);
+// });
+//
+// request.end()
+
+function startBot() {
+    // Create bot and add dialogs
+    var bot = new builder.BotConnectorBot({ appId: 'heartin', appSecret: '71b2e204ae924a3a9f7bccaaeb834d6b' });
+
+    bot.add('/', new builder.CommandDialog()
+        .matches('^search', function (session) {
+            var text = session.message.text;
+            text = text.replace('search','');
+            var textWithoutSpaces = text.replace(' ','');
+            if (textWithoutSpaces.length == 0) {
+                session.send("nothing to search please write words");
+
+            } else {
+                text = text.slice(1);
+                session.send("I start searching for->" + text);
+
+                dbMain.collection('guides').find({"title": new RegExp(text, 'i')}).toArray(function(err, items) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    if(items.length == 0)
+                        session.send("finded zero items");
+                    else {
+                        items.forEach(function(guide) {
+                            session.send("From: " + guide.mainTitle);
+                            session.send("Title: " + guide.title);
+                            session.send(guide.text);
+                        });
+                    }
+
+
+                });
+
             }
 
-            $('#content-block-markup').filter(function() {
-                var textHtml = $(this).html();
+            console.log(session.message);
 
-                var h2t = new chilkat.HtmlToText();
+        })
+        .onDefault(function (session) {
+            session.send("I didn't understand. Say search <what you like to search> to me!");
+        }));
 
-                //  Any string argument automatically begins the 30-day trial.
-                var success = h2t.UnlockComponent("30-day trial");
-                if (success != true) {
-                    console.log(h2t.LastErrorText);
-                    return;
-                }
-                var text = h2t.ToText(textHtml);
 
-                // // Let's store the data we filter into a variable so we can easily see what's going on.
-                // var text = htmlToText.fromString(textHtml, {
-                //     wordwrap: 130
-                // });
-                //console.log(text);
+// Setup Restify Server
+    var server = restify.createServer();
+    server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
+    server.listen(process.env.port || 3978, function () {
+        console.log('%s listening to %s', server.name, server.url);
+    });
+}
 
-                var arrayLines = text.split("\n");
+MongoClient.connect(url, function(err, db) {
+    dbMain = db;
 
-                var formattedDict = {};
+    db.collection('guides').createIndex(
+        { "title": 1,"mainTitle": 1 },
+        { unique: true },
+        function(err, results) {
+            assert.equal(err, null);
+            console.log(results);
+        }
+    );
+    assert.equal(null, err);
+    console.log("Connected correctly to server.");
 
-                for (var i = 0; i < topics.length-1; i++) {
-                    var title = topics[i];
-                    console.log(' start topic title->' + title)
 
-                    var titleNext = topics[i+1];
-                    var startLine;
-                    var stopLine;
-                    for (var j = 0; j < arrayLines.length; j++) {
-                        var line = arrayLines[j];
-                        if (line.indexOf('</') > -1) {
-                            line = line.replace('</','<http://eurheartj.oxfordjournals.org/');
-                            arrayLines[j] = line;
+    // db.collection('guides').find({"title": new RegExp('intervene', 'i')}).toArray(function(err, items) {
+    //     if (err) {
+    //         console.error(err);
+    //         return;
+    //     }
+    //     console.log(items);
+    // });
+
+
+
+
+
+    startBot();
+
+    if (false) {
+        // PARSING
+        var links = [
+            'http://eurheartj.oxfordjournals.org/lookup/doi/10.1093/eurheartj/ehw106',
+            'http://eurheartj.oxfordjournals.org/content/early/2016/05/19/eurheartj.ehw128',
+            'http://eurheartj.oxfordjournals.org/lookup/doi/10.1093/eurheartj/ehv319',
+            'http://eurheartj.oxfordjournals.org/lookup/doi/10.1093/eurheartj/ehv316',
+            'http://eurheartj.oxfordjournals.org/lookup/doi/10.1093/eurheartj/ehv320',
+            'http://eurheartj.oxfordjournals.org/lookup/doi/10.1093/eurheartj/ehv317'
+            // 'http://eurheartj.oxfordjournals.org/content/35/39/2733.full-text.pdf',
+            // 'http://eurheartj.oxfordjournals.org/content/ehj/35/41/2873.full.pdf',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // '',
+            // ''
+        ];
+
+
+
+
+        request(links[5], function (error, response, html) {
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(html);
+                $('.highwire-cite-title-wrap').filter(function() {
+                    var dataMainTitle = $(this);
+                    var dataMainTitleString = dataMainTitle[0].children[0].children[0].data;
+                    if (dataMainTitleString.length <= 0)
+                        console.error('no main title');
+
+                    $('h2').each(function(i, elem) {
+                        console.log('i->' + i + ' parent.class->' + elem.parent.attribs.class + ' text->' + elem.children[0].data);
+                        if (elem.parent.attribs.class !== undefined && elem.parent.attribs.class.indexOf('section') > -1){
+                            var childrens = elem.parent.children;
+                            childrens.shift();
+                            var html = $(elem.parent).html();
+                            var text = h2t.ToText(html);
+                            text = text.replace('</','<http://eurheartj.oxfordjournals.org/');
+                            var formattedDict = {};
+                            formattedDict['mainTitle'] = dataMainTitleString;
+                            formattedDict['title'] = elem.children[0].data;
+                            formattedDict['text'] = text;
+                            if (text.length <= 0)
+                                console.error('no text ');
+                            if (elem.children[0].data.length <= 0)
+                                console.error('no title');
+                            db.collection('guides').insertOne(formattedDict, function(err, result) {
+                                if (err)
+                                    console.error(err);
+                                else console.log("Inserted a document into the collection guides.");
+                            });
+                            //console.log(text);
                         }
+                        // console.error($(this).text());
+                    });
 
-                        if (line.toLowerCase().indexOf(title.toLowerCase()) > -1) {
-                            startLine = j;
-                        }
-                        if (line.toLowerCase().indexOf(titleNext.toLowerCase()) > -1) {
-                            stopLine = j;
-                        }
-                    }
-                    var subarray = arrayLines.slice(startLine,stopLine);
-                    var textSeparated = subarray.join("\n");
-                    console.log('topic block->' + textSeparated);
-                    formattedDict[title] = textSeparated;
-                }
-                
-                isParsed = true;
 
-            });
-            console.log('End parsing');
+                    console.log('End parsing');
 
-        });
+                });
 
 
 //
+            }
+
+        });
     }
+
 });
 
 // var Xray = require('x-ray');
@@ -133,44 +370,17 @@ request('http://eurheartj.oxfordjournals.org/content/early/2016/05/19/eurheartj.
 //     res.pipe(parser);
 // });
 
+var restify = require('restify');
+var builder = require('botbuilder');
+// var model = 'https://api.projectoxford.ai/luis/v1/application?id=c413b2ef-382c-45bd-8ff0-f76d60e2a821&subscription-key=d77c589be95843659e93b31b5621741d&q=';
+// var dialog = new builder.LuisDialog(model);
 
-// var _ = require('underscore'),
-//     PDFParser = require('pdf2json');
-//
-// var pdfParser = new PDFParser();
-//
-// var _onPDFBinDataReady = function (pdf) {
-//     console.log('Loaded pdf:\n');
-//     for (var i in pdf.formImage.Pages) {
-//         var page = pdf.formImage.Pages[i];
-//         for (var j in page.Texts) {
-//             var text = page.Texts[j];
-//             console.log(text.R[0].T);
-//         }
-//     }
-// };
-//
-// // Create an error handling function
-// var _onPDFBinDataError = function (error) {
-//     console.log(error);
-// };
-//
-// // Use underscore to bind the data ready function to the pdfParser
-// // so that when the data ready event is emitted your function will
-// // be called. As opposed to the example, I have used `this` instead
-// // of `self` since self had no meaning in this context
-// pdfParser.on('pdfParser_dataReady', _.bind(_onPDFBinDataReady, this));
-//
-// // Register error handling function
-// pdfParser.on('pdfParser_dataError', _.bind(_onPDFBinDataError, this));
-//
-// // Construct the file path of the pdf
-// var pdfFilePath = 'bin/example.pdf';
-//
-// // Load the pdf. When it is loaded your data ready function will be called.
-// pdfParser.loadPDF(pdfFilePath);
 
-//
+
+
+
+
+// //
 // /**
 //  * Module dependencies.
 //  */
