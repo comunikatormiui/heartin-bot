@@ -30,6 +30,8 @@ if (success != true) {
 var restify = require('restify');
 var builder = require('botbuilder');
 
+
+
 var dbMain;
 
 // var _ = require('underscore'),
@@ -251,7 +253,7 @@ function startBot() {
                     "elements": [{
                         "title": "First card",
                         "subtitle": "Element #1 of an hscroll",
-                        "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
+                        "image_url": "https://mac5.ixcglobal.com/images?name=2016%20European%20Guidelines%20on%20cardiovascular%20disease%20prevention%20in%20clinical%20practice",
                         "buttons": [{
                             "type": "web_url",
                             "url": "https://www.messenger.com",
@@ -290,6 +292,72 @@ function startBot() {
             }
         })
     }
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        var cars = text.split("\n");
+
+        for (var ii = 0; ii < cars.length; ii++) {
+
+            var line = "";
+            var words = cars[ii].split(" ");
+
+            for (var n = 0; n < words.length; n++) {
+                var testLine = line + words[n] + " ";
+                var metrics = context.measureText(testLine);
+                var testWidth = metrics.width;
+
+                if (testWidth > maxWidth) {
+                    context.fillText(line, x, y);
+                    line = words[n] + " ";
+                    y += lineHeight;
+                }
+                else {
+                    line = testLine;
+                }
+            }
+
+            context.fillText(line, x, y);
+            y += lineHeight;
+        }
+    }
+
+    function respondImage(req, res, next) {
+        console.log('Received ' + req);
+        console.log('Received ' + req.query.name);
+        var Canvas = require('canvas')
+            , Image = Canvas.Image
+            , canvas = new Canvas(320, 240)
+            , ctx = canvas.getContext('2d');
+
+        ctx.font = '15px Helvetica Neue';
+        // ctx.rotate(.1);
+        var maxWidth = 300;
+        var lineHeight = 19;
+        var x = 0; // (canvas.width - maxWidth) / 2;
+        var y = 20;
+        wrapText(ctx, req.query.name, x, y, maxWidth, lineHeight);
+
+        // ctx.fillText(req.query.name, 20, 20);
+
+        // var te = ctx.measureText(req.query.name);
+        // ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        // ctx.beginPath();
+        // ctx.lineTo(50, 102);
+        // ctx.lineTo(50 + te.width, 102);
+        // ctx.stroke();
+
+        // console.log('<img src="' + canvas.toDataURL() + '" />');
+        res.contentType = "image/png";
+
+        res.send(canvas.toBuffer());
+
+        // if (req.query.hub.verify_token === 'heartin-bot-verify-token1')
+        //     res.send(req.query.hub.challenge);
+        // else
+        //     res.send('Not verified');
+        next();
+    }
+    server.get('/images', respondImage);
 
     function respond(req, res, next) {
         console.log('Received ' + req);
