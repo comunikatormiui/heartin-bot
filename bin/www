@@ -244,35 +244,29 @@ function startBot() {
     // server.use(restify.urlEncodedBodyParser());
     // server.use(restify.jsonp());
     server.use(restify.bodyParser({ mapParams: false }));
-    function sendGenericMessage(sender) {
+    function sendGenericMessage(sender,guides) {
+        var timestamp = Math.round(new Date().getTime());
+        var elementsToSend = [];
+        guides.forEach(function (guide) {
+            var element = {};
+            element["title"] = guide.title;
+            var text = guide.text;
+            if (text !== undefined && text.length > 0)
+                element["subtitle"] = text.substring(0, 100) + '...';
+            else
+                element["subtitle"] = '...';
+            element["image_url"] = "https://mac5.ixcglobal.com/images?name=" + guide.mainTitle + "&timestamp=" + timestamp;
+            element["buttons"] = [{"type": "postback", "title": "Read more","payload":guide._id}];
+            elementsToSend.push(element);
+        });
+
+
         var messageData = {
             "attachment": {
                 "type": "template",
                 "payload": {
                     "template_type": "generic",
-                    "elements": [{
-                        "title": "First card",
-                        "subtitle": "Element #1 of an hscroll",
-                        "image_url": "https://mac5.ixcglobal.com/images?name=2016%20European%20Guidelines%20on%20cardiovascular%20disease%20prevention%20in%20clinical%20practice",
-                        "buttons": [{
-                            "type": "web_url",
-                            "url": "https://www.messenger.com",
-                            "title": "web url"
-                        }, {
-                            "type": "postback",
-                            "title": "Postback",
-                            "payload": "Payload for first element in a generic bubble",
-                        }],
-                    }, {
-                        "title": "Second card",
-                        "subtitle": "Element #2 of an hscroll",
-                        "image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
-                        "buttons": [{
-                            "type": "postback",
-                            "title": "Postback",
-                            "payload": "Payload for second element in a generic bubble",
-                        }],
-                    }]
+                    "elements": elementsToSend
                 }
             }
         }
@@ -326,15 +320,20 @@ function startBot() {
         console.log('Received ' + req.query.name);
         var Canvas = require('canvas')
             , Image = Canvas.Image
-            , canvas = new Canvas(320, 240)
+            , canvas = new Canvas(400, 100)
             , ctx = canvas.getContext('2d');
 
-        ctx.font = '15px Helvetica Neue';
+        ctx.font = '14px Helvetica Neue';
         // ctx.rotate(.1);
-        var maxWidth = 300;
+        var maxWidth = 200;
         var lineHeight = 19;
-        var x = 0; // (canvas.width - maxWidth) / 2;
+        var x = 110; // (canvas.width - maxWidth) / 2;
         var y = 20;
+        // ctx.beginPath();
+        // ctx.rect(20, 20, 300, 100);
+        // ctx.fillStyle = "red";
+        // ctx.fill();
+
         wrapText(ctx, req.query.name, x, y, maxWidth, lineHeight);
 
         // ctx.fillText(req.query.name, 20, 20);
@@ -398,14 +397,16 @@ function startBot() {
         for (i = 0; i < events.length; i++) {
             var event = events[i];
             if (event.message && event.message.text) {
+                var isSandbox = false;
                 if (event.sender.id === '1254765807882082') {
                     console.log("its sandbox from Alex");
-                    sendGenericMessage(event.sender.id);
-                    continue;
+                    isSandbox = true;
+                    // sendGenericMessage(event.sender.id);
+                    // continue;
                 } else {
                     console.log("its productions")
                 }
-                var text = event.message.text;
+                var text = event.message.text.toLowerCase();
 
                 if (text.indexOf('search') > -1) {
                     text = text.replace('search','');
@@ -425,14 +426,18 @@ function startBot() {
                                 sendMessage(event.sender.id, {text: "finded zero items"});
 
                             else {
-                                items.forEach(function(guide) {
-                                    sendMessage(event.sender.id, {text: "From: " + guide.mainTitle});
-                                    sendMessage(event.sender.id, {text: "Title: " + guide.title});
-                                    var setOfText = guide.text.match(/.{1,310}/g);
-                                    setOfText.forEach(function(textToSend) {
-                                        sendMessage(event.sender.id, {text: textToSend});
-                                    });
-                                });
+                                // if (isSandbox) {
+                                    sendGenericMessage(event.sender.id,items);
+                                // } else {
+                                //     items.forEach(function(guide) {
+                                //         sendMessage(event.sender.id, {text: "From: " + guide.mainTitle});
+                                //         sendMessage(event.sender.id, {text: "Title: " + guide.title});
+                                //         var setOfText = guide.text.match(/.{1,310}/g);
+                                //         setOfText.forEach(function(textToSend) {
+                                //             sendMessage(event.sender.id, {text: textToSend});
+                                //         });
+                                //     });
+                                // }
                             }
 
 
@@ -440,6 +445,87 @@ function startBot() {
 
                     }
                 } else sendMessage(event.sender.id, {text: "I didn't understand. Service provide access to guidelines for cardiologists. Say search <what you like to search> to me!"});
+            }
+            if (event.postback) {
+                var text = JSON.stringify(event.postback)
+                console.log('postback: ', text);
+                var ObjectID = require('mongodb').ObjectID;
+                var obj = new ObjectID(event.postback.payload);
+
+                dbMain.collection('guides').find({_id: obj}).toArray(function(err, items) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    if (items.length == 0)
+                        sendMessage(event.sender.id, {text: "finded zero items"});
+
+                    var guide = items[0];
+                    var textToSend = guide.text;
+                    var i = 0;
+                    var substring = textToSend.substring(i,i+300);
+                    var isLastMessage = false;
+
+                    function sendRequest(senderId) {
+                    //     console.log('send to ' + senderId + ' message->' + substring);
+                        request({
+                            url: 'https://graph.facebook.com/v2.6/me/messages',
+                            qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+                            method: 'POST',
+                            json: {
+                                recipient: {id: event.sender.id},
+                                message: {text: substring}
+                            }
+                        }, function(error, response, body) {
+                            if (error) {
+                                console.log('Error sending message: ', error);
+                            } else if (response.body.error) {
+                                console.log('Error: ', response.body.error);
+                            } else {
+                                if (!isLastMessage) {
+                                    if (i < textToSend.length) {
+                                        if (i + 300 > textToSend.length) {
+                                            var lengthLatest = textToSend.length-i;
+                                            substring = textToSend.substring(i,i + lengthLatest);
+                                            isLastMessage = true;
+                                        } else {
+                                            i+= 300;
+                                            substring = textToSend.substring(i,i+300);
+                                        }
+                                        sendRequest(senderId);
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    sendRequest(event.sender.id);
+
+                    // for (i = 0; i < textToSend.length; i+= 300) {
+                    //     var substring = textToSend.substring(i,i+300);
+                    //     // sendMessage(event.sender.id, {text: substring});
+                    //     request({
+                    //         url: 'https://graph.facebook.com/v2.6/me/messages',
+                    //         qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+                    //         method: 'POST',
+                    //         json: {
+                    //             recipient: {id: event.sender.id},
+                    //             message: substring,
+                    //         }
+                    //     }, function(error, response, body) {
+                    //         if (error) {
+                    //             console.log('Error sending message: ', error);
+                    //         } else if (response.body.error) {
+                    //             console.log('Error: ', response.body.error);
+                    //         }
+                    //     });
+                    //
+                    // }
+                    // var setOfText = guide.text.match(/.{1,310}/g);
+                    // setOfText.forEach(function(textToSend) {
+                    //     sendMessage(event.sender.id, {text: textToSend});
+                    // });
+                });
             }
         }
         res.send("");
