@@ -242,6 +242,54 @@ function startBot() {
     // server.use(restify.urlEncodedBodyParser());
     // server.use(restify.jsonp());
     server.use(restify.bodyParser({ mapParams: false }));
+    function sendGenericMessage(sender) {
+        var messageData = {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "generic",
+                    "elements": [{
+                        "title": "First card",
+                        "subtitle": "Element #1 of an hscroll",
+                        "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
+                        "buttons": [{
+                            "type": "web_url",
+                            "url": "https://www.messenger.com",
+                            "title": "web url"
+                        }, {
+                            "type": "postback",
+                            "title": "Postback",
+                            "payload": "Payload for first element in a generic bubble",
+                        }],
+                    }, {
+                        "title": "Second card",
+                        "subtitle": "Element #2 of an hscroll",
+                        "image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
+                        "buttons": [{
+                            "type": "postback",
+                            "title": "Postback",
+                            "payload": "Payload for second element in a generic bubble",
+                        }],
+                    }]
+                }
+            }
+        }
+        request({
+            url: 'https://graph.facebook.com/v2.6/me/messages',
+            qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+            method: 'POST',
+            json: {
+                recipient: {id:sender},
+                message: messageData,
+            }
+        }, function(error, response, body) {
+            if (error) {
+                console.log('Error sending messages: ', error)
+            } else if (response.body.error) {
+                console.log('Error: ', response.body.error)
+            }
+        })
+    }
 
     function respond(req, res, next) {
         console.log('Received ' + req);
@@ -282,6 +330,13 @@ function startBot() {
         for (i = 0; i < events.length; i++) {
             var event = events[i];
             if (event.message && event.message.text) {
+                if (event.sender.id === '1254765807882082') {
+                    console.log("its sandbox from Alex");
+                    sendGenericMessage(event.sender.id);
+                    continue;
+                } else {
+                    console.log("its productions")
+                }
                 var text = event.message.text;
 
                 if (text.indexOf('search') > -1) {
