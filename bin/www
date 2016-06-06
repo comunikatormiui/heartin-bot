@@ -246,46 +246,64 @@ function startBot() {
     // server.use(restify.jsonp());
     server.use(restify.bodyParser({ mapParams: false }));
     function sendGenericMessage(sender,guides) {
-        var timestamp = Math.round(new Date().getTime());
-        var elementsToSend = [];
-        guides.forEach(function (guide) {
-            var element = {};
-            element["title"] = guide.title;
-            var text = guide.text;
-            if (text !== undefined && text.length > 0)
-                element["subtitle"] = text.substring(0, 100) + '...';
-            else
-                element["subtitle"] = '...';
-            element["image_url"] = "https://mac5.ixcglobal.com/images?name=" + guide.mainTitle + "&timestamp=" + timestamp;
-            element["buttons"] = [{"type": "postback", "title": "Read more","payload":guide._id}];
-            elementsToSend.push(element);
-        });
+
+        function sendMessageForItems(items) {
+            var elementsToSend = [];
+
+            items.forEach(function (guide) {
+                var element = {};
+                var timestamp = Math.round(new Date().getTime());
+
+                element["title"] = guide.title;
+                var text = guide.text;
+                if (text !== undefined && text.length > 0)
+                    element["subtitle"] = text.substring(0, 100) + '...';
+                else
+                    element["subtitle"] = '...';
+                element["image_url"] = "https://mac5.ixcglobal.com/images?name=" + guide.mainTitle + "&timestamp=" + timestamp;
+                element["buttons"] = [{"type": "postback", "title": "Read more","payload":guide._id}];
+                elementsToSend.push(element);
+            });
 
 
-        var messageData = {
-            "attachment": {
-                "type": "template",
-                "payload": {
-                    "template_type": "generic",
-                    "elements": elementsToSend
+            var messageData = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": elementsToSend
+                    }
                 }
             }
+            request({
+                url: 'https://graph.facebook.com/v2.6/me/messages',
+                qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+                method: 'POST',
+                json: {
+                    recipient: {id:sender},
+                    message: messageData,
+                }
+            }, function(error, response, body) {
+                if (error) {
+                    console.log('Error sending messages: ', error)
+                } else if (response.body.error) {
+                    console.log('Error: ', response.body.error)
+                }
+            });
         }
-        request({
-            url: 'https://graph.facebook.com/v2.6/me/messages',
-            qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
-            method: 'POST',
-            json: {
-                recipient: {id:sender},
-                message: messageData,
+        if (guides.length < 9)
+            sendMessageForItems(guides);
+        else {
+            for (i = 0; i < guides.length; i+= 9) {
+                var nextStep = 0;
+                if (i+9 > guides.length)
+                    nextStep = guides.length - i;
+                else
+                    nextStep = i+9;
+                var arrayToSend = guides.slice(i,nextStep+i);
+                sendMessageForItems(arrayToSend);
             }
-        }, function(error, response, body) {
-            if (error) {
-                console.log('Error sending messages: ', error)
-            } else if (response.body.error) {
-                console.log('Error: ', response.body.error)
-            }
-        })
+        }
     }
 
     function sendButtonMessage(sender,titleText,searchString) {
@@ -444,7 +462,7 @@ function startBot() {
                         sendMessage(event.sender.id, {text: "nothing to search please write words"});
                     } else {
                         text = text.slice(1);
-                        sendMessage(event.sender.id, {text: "I start searching for->" + text});
+                        sendMessage(event.sender.id, {text: "I start searching for '" + text + "'"});
                         dbMain.collection('guides').find({"title": new RegExp(text, 'i')}).toArray(function(err, items) {
                             if (err) {
                                 console.error(err);
@@ -482,8 +500,8 @@ function startBot() {
                 if (event.postback.payload === 'no')
                     return;
                 if (event.postback.payload.indexOf('yes')  > -1) {
-                    var search = event.postback.payload.slice(3);
-                    sendMessage(event.sender.id, {text: "I start searching for->" + search});
+                    var search = event.postback.payload.slice(4);
+                    sendMessage(event.sender.id, {text: "I start searching for '" + search + "'"});
                     dbMain.collection('guides').find({"title": new RegExp(search, 'i')}).toArray(function(err, items) {
                         if (err) {
                             console.error(err);
