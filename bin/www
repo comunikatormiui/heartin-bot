@@ -478,13 +478,6 @@ function startBot() {
 
                     }
                 } else {
-//                    sendMessage(event.sender.id, {text: "I didn't understand. Service provide access to guidelines for cardiologists. Type like /search cardiovascular to me!"});
-                    //  include the Keyword Extractor
-
-//  Opening sentence to NY Times Article at
-//  http://www.nytimes.com/2013/09/10/world/middleeast/surprise-russian-proposal-catches-obama-between-putin-and-house-republicans.html
-
-//  Extract the keywords
                     var extraction_result = keyword_extractor.extract(event.message.text,{
                         language:"english",
                         remove_digits: true,
@@ -495,6 +488,29 @@ function startBot() {
 
                     sendButtonMessage(event.sender.id,'Do you like to search "' + search + "'? You can allways search by type '/search cardiovascular'",search);
                 }
+
+                var senderId = event.sender.id;
+                request({
+                    url: 'https://graph.facebook.com/v2.6/' + senderId,
+                    qs: {
+                        fields: 'first_name,last_name,profile_pic,locale,timezone,gender',
+                        access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+                    method: 'GET'
+                }, function(error, response, body) {
+                    if (error) {
+                        console.log('Error sending messages: ', error)
+                    } else if (response.body.error) {
+                        console.log('Error: ', response.body.error)
+                    }
+                    var info = JSON.parse(body);
+                    info.id = senderId;
+                    console.log(info);
+                    dbMain.collection('fbUsers').insertOne(info, function(err, result) {
+                        if (err)
+                            console.error(err);
+                        else console.log("Inserted a document into the collection fbUsers.");
+                    });
+                });
             }
             if (event.postback) {
                 if (event.postback.payload === 'no')
@@ -610,6 +626,14 @@ MongoClient.connect(url, function(err, db) {
 
     db.collection('guides').createIndex(
         { "title": 1,"mainTitle": 1 },
+        { unique: true },
+        function(err, results) {
+            assert.equal(err, null);
+            console.log(results);
+        }
+    );
+    db.collection('fbUsers').createIndex(
+        { "id": 1 },
         { unique: true },
         function(err, results) {
             assert.equal(err, null);
