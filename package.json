@@ -17,6 +17,7 @@
     "express": "^4.13.4",
     "html2json": "^1.0.2",
     "jade": "^1.11.0",
+    "keyword-extractor": "0.0.12",
     "mongodb": "^2.1.21",
     "morgan": "^1.6.1",
     "ms-rest": "^1.14.2",

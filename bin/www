@@ -30,6 +30,7 @@ if (success != true) {
 var restify = require('restify');
 var builder = require('botbuilder');
 
+var keyword_extractor = require("keyword-extractor");
 
 
 var dbMain;
@@ -287,6 +288,34 @@ function startBot() {
         })
     }
 
+    function sendButtonMessage(sender,titleText,searchString) {
+        var messageData = {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "button",
+                    "text": titleText,
+                    "buttons" : [{"type": "postback", "title": "Yes","payload":"yes/" + searchString},{"type": "postback", "title": "No","payload":"no"}]
+                }
+            }
+        }
+        request({
+            url: 'https://graph.facebook.com/v2.6/me/messages',
+            qs: {access_token: 'EAANoqHvZBBckBAPS5td0KpIatcKLEL2jnflMXQTdm3XbXiP73eAnFVbBIBZAADQH8RSNwK3IoEELa4q1wkq2ZBXA7eVBHRmX25huGRRJr0NLF99NdhVAg2MKXtSTRJWs3vSmCiTZBl8qgV6RzaC4Dt7L98jy2ujZCZCOamaw1rtAZDZD'},
+            method: 'POST',
+            json: {
+                recipient: {id:sender},
+                message: messageData
+            }
+        }, function(error, response, body) {
+            if (error) {
+                console.log('Error sending messages: ', error)
+            } else if (response.body.error) {
+                console.log('Error: ', response.body.error)
+            }
+        })
+    }
+
     function wrapText(context, text, x, y, maxWidth, lineHeight) {
         var cars = text.split("\n");
 
@@ -408,15 +437,14 @@ function startBot() {
                 }
                 var text = event.message.text.toLowerCase();
 
-                if (text.indexOf('search') > -1) {
-                    text = text.replace('search','');
+                if (text.indexOf('/search') > -1) {
+                    text = text.replace('/search','');
                     var textWithoutSpaces = text.replace(' ','');
                     if (textWithoutSpaces.length == 0) {
                         sendMessage(event.sender.id, {text: "nothing to search please write words"});
                     } else {
                         text = text.slice(1);
                         sendMessage(event.sender.id, {text: "I start searching for->" + text});
-
                         dbMain.collection('guides').find({"title": new RegExp(text, 'i')}).toArray(function(err, items) {
                             if (err) {
                                 console.error(err);
@@ -426,28 +454,51 @@ function startBot() {
                                 sendMessage(event.sender.id, {text: "finded zero items"});
 
                             else {
-                                // if (isSandbox) {
-                                    sendGenericMessage(event.sender.id,items);
-                                // } else {
-                                //     items.forEach(function(guide) {
-                                //         sendMessage(event.sender.id, {text: "From: " + guide.mainTitle});
-                                //         sendMessage(event.sender.id, {text: "Title: " + guide.title});
-                                //         var setOfText = guide.text.match(/.{1,310}/g);
-                                //         setOfText.forEach(function(textToSend) {
-                                //             sendMessage(event.sender.id, {text: textToSend});
-                                //         });
-                                //     });
-                                // }
+                                sendGenericMessage(event.sender.id,items);
                             }
-
-
                         });
 
                     }
-                } else sendMessage(event.sender.id, {text: "I didn't understand. Service provide access to guidelines for cardiologists. Say search <what you like to search> to me!"});
+                } else {
+//                    sendMessage(event.sender.id, {text: "I didn't understand. Service provide access to guidelines for cardiologists. Type like /search cardiovascular to me!"});
+                    //  include the Keyword Extractor
+
+//  Opening sentence to NY Times Article at
+//  http://www.nytimes.com/2013/09/10/world/middleeast/surprise-russian-proposal-catches-obama-between-putin-and-house-republicans.html
+
+//  Extract the keywords
+                    var extraction_result = keyword_extractor.extract(event.message.text,{
+                        language:"english",
+                        remove_digits: true,
+                        return_changed_case:true,
+                        remove_duplicates: false
+                    });
+                    var search = extraction_result.join(" ");
+
+                    sendButtonMessage(event.sender.id,'Do you like to search "' + search + "'? You can allways search by type '/search cardiovascular'",search);
+                }
             }
             if (event.postback) {
-                var text = JSON.stringify(event.postback)
+                if (event.postback.payload === 'no')
+                    return;
+                if (event.postback.payload.indexOf('yes')  > -1) {
+                    var search = event.postback.payload.slice(3);
+                    sendMessage(event.sender.id, {text: "I start searching for->" + search});
+                    dbMain.collection('guides').find({"title": new RegExp(search, 'i')}).toArray(function(err, items) {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        if(items.length == 0)
+                            sendMessage(event.sender.id, {text: "finded zero items"});
+                        else {
+                            sendGenericMessage(event.sender.id,items);
+                        }
+                    });
+                    return;
+                }
+
+                var text = JSON.stringify(event.postback);
                 console.log('postback: ', text);
                 var ObjectID = require('mongodb').ObjectID;
                 var obj = new ObjectID(event.postback.payload);
