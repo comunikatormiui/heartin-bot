@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
+    "bot": "node ./bin/bot",
     "slate": "rimraf node_modules && npm install"
   },
   "dependencies": {
