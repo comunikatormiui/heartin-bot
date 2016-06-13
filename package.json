@@ -7,6 +7,7 @@
     "bot": "node ./bin/bot",
     "restify": "node ./bin/restify",
     "express": "node ./bin/express",
+    "parse": "node ./bin/parse",
     "slate": "rimraf node_modules && npm install"
   },
   "dependencies": {
