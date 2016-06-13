@@ -1,48 +1,42 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+import express      from 'express';
+import deb          from 'debug';
+import logger       from 'morgan';
+import path         from 'path';
+import favicon      from 'serve-favicon';
+import bodyParser   from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cons         from 'consolidate';
+import routes       from './routes';
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var webhook = require('./routes/webhook');
+const debug = deb('heartin-bot:server');
+const app = express();
 
-var app = express();
+app.set('port', process.env.PORT || 9000);
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.engine('jade', cons.jade);
 app.set('view engine', 'jade');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.set('views', path.join(__dirname, 'views'));
+if (app.get('env') !== 'development') {
+  app.enable('view cache');
+} else {
+  app.use(logger('dev'));
+}
+app.use(favicon(`${__dirname}/public/favicon.ico`));
+app.use(bodyParser.json({
+  limit: '20mb'
+}));
+app.use(bodyParser.urlencoded({
+  limit: '20mb',
+  extended: true
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/', routes);
-// app.use('/users', users);
-// app.use('/webhook', webhook);
-// var router = express.Router();
-//
-//
-app.get('/webhook', function(req, res){
-  if (req.query['hub.verify_token'] === 'heartin-bot-verify-token')
-      res.send(req.query['hub.challenge']);
-  else
-      res.send('wrong token,error');
-  var received = req.query;
-  
-  console.log('Received ' + received);
-
-});
+app.use('/', routes);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
@@ -52,7 +46,7 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -63,7 +57,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
@@ -71,5 +65,6 @@ app.use(function(err, req, res, next) {
   });
 });
 
-
-module.exports = app;
+app.listen(app.get('port'), '0.0.0.0', () => {
+  debug(`Express server listening on port ${app.get('port')} in ${app.get('env')} mode`);
+});
