@@ -11,6 +11,7 @@
     "slate": "rimraf node_modules && npm install"
   },
   "dependencies": {
+    "babel-polyfill": "^6.9.1",
     "body-parser": "^1.13.3",
     "botbuilder": "^1.0.1",
     "botconnector": "^0.9.6",
