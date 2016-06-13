@@ -1,3 +1,3 @@
-/**
- * Created by alex on 6/4/16.
- */
+export default (req, res) => {
+  res.send('respond with a resource');
+};
