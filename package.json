@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
     "bot": "node ./bin/bot",
     "restify": "node ./bin/restify",
+    "express": "node ./bin/express",
     "slate": "rimraf node_modules && npm install"
   },
   "dependencies": {
