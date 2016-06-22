@@ -124,7 +124,8 @@ MongoClient.connect(url, function(err, db) {
                     });
 
 
-                }
+                } else process.exit(0);
+
             }());
         }
     });
