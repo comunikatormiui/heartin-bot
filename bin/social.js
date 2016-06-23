@@ -1,6 +1,25 @@
 /**
  * Created by alex on 6/21/16.
  */
+var Mailchimp = require('mailchimp-api-v3')
+
+var mailchimp = new Mailchimp('9b979446def71d4d072fd25851dbdb60-us9');
+(function() {
+    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    Date.prototype.getMonthName = function() {
+        return months[ this.getMonth() ];
+    };
+    Date.prototype.getDayName = function() {
+        return days[ this.getDay() ];
+    };
+})();
+
+
+
+
 var Twitter = require('twitter');
 var client = new Twitter({
     consumer_key: 'iQzidPV6gp9dkfVnZzjPNNret',
@@ -93,7 +112,54 @@ MongoClient.connect(url, function(err, db) {
             //console.log(tweets);
             // var tweet = tweets[2];
             var i = 0;
+            var list_id = '6509eb90d2';
+            var now = new Date();
 
+            var day = now.getDayName();
+            var month = now.getMonthName();
+            var title = "healthcare news for " + day + " of the " + month;
+
+            mailchimp.post('/campaigns', {
+                    type : 'regular',
+                    recipients : {
+                        list_id : list_id
+                    },
+                    settings : {
+                        subject_line : title,
+                        title : title,
+                        from_name : "healthcare news",
+                        reply_to : "info@heartin.net"
+                    }
+                })
+                .then(function(results) {
+                    var campaign_id = results.id;
+                    console.log(campaign_id);
+                    mailchimp.put('/campaigns/' + campaign_id + '/content', {
+                            html :
+                            '<p>Dear subscriber. </p>' +
+                            '<p>We are update news on our <a href="https://www.facebook.com/healthcareNewsService/">page </a></p>' +
+                            '<p>please take visit there</p>'
+                        })
+                        .then(function(results) {
+                            console.log(results);
+                            mailchimp.post('/campaigns/' + campaign_id + '/actions/send', {
+                                })
+                                .then(function(results) {
+                                    console.log(results);
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        });
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });
+
+            
             (function loop() {
                 if (i < tweets.length) {
                     console.log('post tweet' + i);
