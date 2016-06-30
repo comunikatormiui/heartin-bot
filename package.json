@@ -36,6 +36,7 @@
     "pdftohtmljs": "^0.4.0",
     "pug": "^2.0.0-beta3",
     "request": "^2.72.0",
+    "request-promise": "^3.0.0",
     "restify": "^4.1.0",
     "serve-favicon": "^2.3.0"
   },
