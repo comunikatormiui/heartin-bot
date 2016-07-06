@@ -159,7 +159,7 @@ MongoClient.connect(url, function(err, db) {
                     console.log(err);
                 });
 
-            
+
             (function loop() {
                 if (i < tweets.length) {
                     console.log('post tweet' + i);
