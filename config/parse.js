@@ -1,4 +1,5 @@
 const config = {
+  dir: 'tmp',
   colors: ['e0f0f0', 'f2f2e2', 'f2f2e3', 'f2f2e4'],
   options: [
     {
