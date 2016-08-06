@@ -8,6 +8,7 @@
     "restify": "node ./bin/restify",
     "express": "node ./bin/express",
     "parse": "node ./bin/parse",
+    "debug:parse": "cross-env DEBUG=true node ./bin/parse",
     "slate": "rimraf node_modules && npm install"
   },
   "dependencies": {
