@@ -26,6 +26,9 @@ const config = {
       name: 'font-family',
       value: 'ffd'
     }
+  ],
+  regex: [
+    '/(Page\s[0-9]{1,2}\sof\s[0-9]{1,2})/g'
   ]
 };
 
