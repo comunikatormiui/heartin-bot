@@ -43,7 +43,8 @@
     "request": "^2.72.0",
     "request-promise": "^3.0.0",
     "restify": "^4.1.0",
-    "serve-favicon": "^2.3.0"
+    "serve-favicon": "^2.3.0",
+    "webshot": "^0.18.0"
   },
   "devDependencies": {
     "cross-env": "^2.0.0",
