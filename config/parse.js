@@ -1,6 +1,6 @@
 const config = {
   dir: 'tmp',
-  colors: ['e0f0f0', 'f2f2e2', 'f2f2e3', 'f2f2e4'],
+  colors: ['e0f0f0', 'f2f2e2', 'f2f2e3', 'f2f2e4', 'E6E6E6'],
   options: [
     {
       name: 'font-size',
