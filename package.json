@@ -21,7 +21,6 @@
     "botconnector": "^0.9.6",
     "canvas": "^1.3.16",
     "cheerio": "^0.20.0",
-    "chilkat_linux64": "^9.50.56",
     "chilkat_macosx": "^9.50.56",
     "consolidate": "^0.14.1",
     "cookie-parser": "^1.3.5",
