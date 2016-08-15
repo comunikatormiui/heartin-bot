@@ -1,6 +1,6 @@
 const config = {
   dir: 'tmp',
-  colors: ['e0f0f0', 'f2f2e2', 'f2f2e3', 'f2f2e4'],
+  colors: ['e0f0f0', 'f2f2e2', 'f2f2e3', 'f2f2e4', 'E6E6E6'],
   options: [
     {
       name: 'font-size',
@@ -25,6 +25,26 @@ const config = {
     {
       name: 'font-family',
       value: 'ffd'
+    },
+    {
+      name: 'font-size',
+      value: '44.000400px'
+    },
+    {
+      name: 'font-size',
+      value: '43.836000px'
+    },
+    {
+      name: 'font-size',
+      value: '39.850400px'
+    },
+    {
+      name: 'font-size',
+      value: '43.902800px'
+    },
+    {
+      name: 'font-size',
+      value: '35.920800px'
     }
   ],
   regex: [
