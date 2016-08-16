@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "npm run restify & npm run bot",
+    "start": "npm run bot",
     "bot": "node ./bin/bot",
     "restify": "node ./bin/restify",
     "express": "node ./bin/express",
