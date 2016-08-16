@@ -33,7 +33,6 @@
     "htmlparser2": "^3.9.1",
     "jsdom": "^9.4.0",
     "lodash": "^4.14.1",
-    "mongodb": "^2.1.21",
     "mongoose": "^4.5.9",
     "morgan": "^1.6.1",
     "ms-rest": "^1.14.2",
