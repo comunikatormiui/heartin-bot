@@ -49,7 +49,8 @@ const links = [
   },
   {
     title: 'Third Universal Definition of Myocardial Infarction',
-    link: 'http://eurheartj.oxfordjournals.org/content/33/20/2551.full.pdf'
+    link: 'http://eurheartj.oxfordjournals.org/content/33/20/2551.full.pdf',
+    numbers: false
   },
   'http://eurheartj.oxfordjournals.org/content/33/20/2569', // ESC Guidelines for the management of acute myocardial infarction in patients presenting with ST-segment elevation
   {
