@@ -18,7 +18,7 @@ var accessToken='EAANBZCY6ZAVmIBAJ3ltZCAaqfvnvUiZAbYuYmVZARwW1b6USZAEXiVbI6lbWoX
 const https = require('https');
 
 var querystring = require('querystring');
-var url = 'mongodb://mac5.ixcglobal.com:27017/heartin-news';
+var url = 'mongodb://localhost:27017/heartin-news';
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
