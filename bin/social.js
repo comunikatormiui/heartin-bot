@@ -37,7 +37,7 @@ var accessToken='EAANBZCY6ZAVmIBAJ3ltZCAaqfvnvUiZAbYuYmVZARwW1b6USZAEXiVbI6lbWoX
 const https = require('https');
 
 var querystring = require('querystring');
-var url = 'mongodb://localhost:27017/heartin-news';
+var url = 'mongodb://news:Manual@localhost:27017/heartin-news?authSource=heartin';
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
