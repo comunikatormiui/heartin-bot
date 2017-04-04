@@ -118,7 +118,7 @@ MongoClient.connect(url, function(err, db) {
             var day = now.getDayName();
             var month = now.getMonthName();
             var title = "healthcare news for " + day + " of the " + month;
-
+/*
             mailchimp.post('/campaigns', {
                     type : 'regular',
                     recipients : {
@@ -157,7 +157,7 @@ MongoClient.connect(url, function(err, db) {
                 })
                 .catch(function (err) {
                     console.log(err);
-                });
+                });*/
 
 
             (function loop() {
