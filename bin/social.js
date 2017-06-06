@@ -285,7 +285,7 @@ var accessToken='EAANBZCY6ZAVmIBAJ3ltZCAaqfvnvUiZAbYuYmVZARwW1b6USZAEXiVbI6lbWoX
 //&expires=5184000
 
 var querystring = require('querystring');
-var url = 'mongodb://mac5.ixcglobal.com:27017/heartin-news';
+var url = 'mongodb://news:Manual@localhost:27017/heartin-news?authSource=heartin';
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
@@ -362,49 +362,49 @@ MongoClient.connect(url, function(err, db) {
             // var list_id = '6509eb90d2';
             // var now = new Date();
 
-            // var day = now.getDayName();
-            // var month = now.getMonthName();
-            // var title = "healthcare news for " + day + " of the " + month;
-
-            // mailchimp.post('/campaigns', {
-            //         type : 'regular',
-            //         recipients : {
-            //             list_id : list_id
-            //         },
-            //         settings : {
-            //             subject_line : title,
-            //             title : title,
-            //             from_name : "healthcare news",
-            //             reply_to : "info@heartin.net"
-            //         }
-            //     })
-            //     .then(function(results) {
-            //         var campaign_id = results.id;
-            //         console.log(campaign_id);
-            //         mailchimp.put('/campaigns/' + campaign_id + '/content', {
-            //                 html :
-            //                 '<p>Dear subscriber. </p>' +
-            //                 '<p>We are update news on our <a href="https://www.facebook.com/healthcareNewsService/">page </a></p>' +
-            //                 '<p>please take visit there</p>'
-            //             })
-            //             .then(function(results) {
-            //                 console.log(results);
-            //                 mailchimp.post('/campaigns/' + campaign_id + '/actions/send', {
-            //                     })
-            //                     .then(function(results) {
-            //                         console.log(results);
-            //                     })
-            //                     .catch(function (err) {
-            //                         console.log(err);
-            //                     });
-            //             })
-            //             .catch(function (err) {
-            //                 console.log(err);
-            //             });
-            //     })
-            //     .catch(function (err) {
-            //         console.log(err);
-            //     });
+            var day = now.getDayName();
+            var month = now.getMonthName();
+            var title = "healthcare news for " + day + " of the " + month;
+/*
+            mailchimp.post('/campaigns', {
+                    type : 'regular',
+                    recipients : {
+                        list_id : list_id
+                    },
+                    settings : {
+                        subject_line : title,
+                        title : title,
+                        from_name : "healthcare news",
+                        reply_to : "info@heartin.net"
+                    }
+                })
+                .then(function(results) {
+                    var campaign_id = results.id;
+                    console.log(campaign_id);
+                    mailchimp.put('/campaigns/' + campaign_id + '/content', {
+                            html :
+                            '<p>Dear subscriber. </p>' +
+                            '<p>We are update news on our <a href="https://www.facebook.com/healthcareNewsService/">page </a></p>' +
+                            '<p>please take visit there</p>'
+                        })
+                        .then(function(results) {
+                            console.log(results);
+                            mailchimp.post('/campaigns/' + campaign_id + '/actions/send', {
+                                })
+                                .then(function(results) {
+                                    console.log(results);
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        });
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });*/
 
 
             (function loop() {
