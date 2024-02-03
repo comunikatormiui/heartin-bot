@@ -27,7 +27,7 @@
     "method-override": "^2.3.6",
     "mongodb": "^2.1.21",
     "morgan": "^1.6.1",
-    "ms-rest": "^1.14.2",
+    "ms-rest": "^2.0.0",
     "node-wit": "^3.3.2",
     "passport-facebook-token": "^3.2.0",
     "querystring": "^0.2.0",
